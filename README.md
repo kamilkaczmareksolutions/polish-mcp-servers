@@ -1,11 +1,40 @@
 # Polish MCP Servers
 
-Two remote [Model Context Protocol](https://modelcontextprotocol.io) servers for Polish public data, hosted on [Apify](https://apify.com/enterprising_hamster). Nothing to install: point your MCP client at a URL and authenticate with your Apify account.
+Two remote [Model Context Protocol](https://modelcontextprotocol.io) servers for Polish public data, hosted on [Apify](https://apify.com/enterprising_hamster). For those hosted servers, point your MCP client at a URL and authenticate with your Apify account.
 
 - **Polish Law MCP**: Polish statutes from the Sejm ELI API (Dziennik Ustaw, Monitor Polski) and court judgments from SAOS.
 - **Polish Public Registers**: 10 official Polish registers (EU-funded tenders, EV charging stations, vehicle registrations, building permits, land parcels and zoning, healthcare facilities, developer apartment prices, electricity market, legal acts, court judgments).
 
-This repository contains documentation only. The servers run as Apify Actors.
+This repository contains a local stdio MCP server for the same public Actors, and the documentation for the hosted endpoints. The hosted servers still run as Apify Actors.
+
+## Run locally
+
+`tools/list` answers with no `APIFY_TOKEN` and no network. `tools/call` runs the Actor on your Apify account. Create a token at [console.apify.com/settings/integrations](https://console.apify.com/settings/integrations) and set `APIFY_TOKEN`.
+
+Each call returns at most 100 dataset items and at most 256 KiB of JSON. Pass `maxItems` to ask for fewer. When the actor schema already defaults `maxItems` to 100 or less, that default stands. The law tool defaults to 20, because that Actor's schema has no `maxItems`.
+
+From this directory:
+
+```bash
+npm install
+npm run build
+node dist/main.js
+```
+
+`npx polish-mcp` runs the same process after `npm install`. Law only is `node dist/law.js` or `npx polish-law-mcp`. Registers only is `node dist/registers.js` or `npx polish-public-registers`. The registers process includes `cee-public-tenders`, which the hosted registers URL omits.
+
+Docker image, no secrets required for `tools/list`:
+
+```bash
+docker build -t polish-mcp-servers .
+docker run --rm -i polish-mcp-servers
+```
+
+Pass the token only when you want `tools/call` to run an Actor:
+
+```bash
+docker run --rm -i -e APIFY_TOKEN=<YOUR_APIFY_TOKEN> polish-mcp-servers
+```
 
 ## Servers
 
@@ -134,6 +163,35 @@ Settings → Connectors → Add custom connector, then paste the MCP URL (e.g. `
 
 Add `polish-public-registers` the same way with its URL.
 
+### Local stdio
+
+Use this when you run the server from this repository. Replace the path with your checkout. Hosted `url` entries above stay valid.
+
+Claude Desktop uses `claude_desktop_config.json`. Cursor uses `~/.cursor/mcp.json` or `.cursor/mcp.json`.
+
+```json
+{
+  "mcpServers": {
+    "polish-law": {
+      "command": "node",
+      "args": ["/absolute/path/to/polish-mcp-servers/dist/law.js"],
+      "env": {
+        "APIFY_TOKEN": "<YOUR_APIFY_TOKEN>"
+      }
+    },
+    "polish-public-registers": {
+      "command": "node",
+      "args": ["/absolute/path/to/polish-mcp-servers/dist/registers.js"],
+      "env": {
+        "APIFY_TOKEN": "<YOUR_APIFY_TOKEN>"
+      }
+    }
+  }
+}
+```
+
+Omit `APIFY_TOKEN` if you only want `tools/list`. A call then returns an MCP tool error that points at the token page.
+
 ## Official MCP Registry
 
 - `io.github.kamilkaczmareksolutions/polish-law-mcp`
@@ -147,4 +205,4 @@ All data comes from official Polish public registers and open-data APIs: Sejm EL
 
 ## License
 
-Documentation in this repository is released under the [MIT License](LICENSE).
+This repository is released under the [MIT License](LICENSE).
