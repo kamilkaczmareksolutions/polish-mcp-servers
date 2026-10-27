@@ -1,42 +1,111 @@
-# Polish MCP Servers
+# Polish MCP servers
 
-Two remote [Model Context Protocol](https://modelcontextprotocol.io) servers for Polish public data, hosted on [Apify](https://apify.com/enterprising_hamster). For those hosted servers, point your MCP client at a URL and authenticate with your Apify account.
+[![Glama](https://glama.ai/mcp/servers/kamilkaczmareksolutions/polish-mcp-servers/badge)](https://glama.ai/mcp/servers/kamilkaczmareksolutions/polish-mcp-servers)
 
-- **Polish Law MCP**: Polish statutes from the Sejm ELI API (Dziennik Ustaw, Monitor Polski) and court judgments from SAOS.
-- **Polish Public Registers**: 10 official Polish registers (EU-funded tenders, EV charging stations, vehicle registrations, building permits, land parcels and zoning, healthcare facilities, developer apartment prices, electricity market, legal acts, court judgments).
+Local [Model Context Protocol](https://modelcontextprotocol.io) server for Polish public data. It speaks stdio and exposes 12 tools, one for each public Apify Actor by [enterprising_hamster](https://apify.com/enterprising_hamster).
 
-This repository contains a local stdio MCP server for the same public Actors, and the documentation for the hosted endpoints. The hosted servers still run as Apify Actors.
+`tools/list` answers with no `APIFY_TOKEN` and no network. `tools/call` runs that Actor on your Apify account. Create a token at [console.apify.com/settings/integrations](https://console.apify.com/settings/integrations) and set `APIFY_TOKEN`. A call without a token returns an MCP tool error that points at that page.
 
-## Run locally
+Each call returns at most 100 dataset items and at most 256 KiB of JSON. Pass `maxItems` to ask for fewer. When the Actor schema already defaults `maxItems` to 100 or less, that default stands. The law tool defaults to 20, because that Actor's schema has no `maxItems`.
 
-`tools/list` answers with no `APIFY_TOKEN` and no network. `tools/call` runs the Actor on your Apify account. Create a token at [console.apify.com/settings/integrations](https://console.apify.com/settings/integrations) and set `APIFY_TOKEN`.
+## Tools
 
-Each call returns at most 100 dataset items and at most 256 KiB of JSON. Pass `maxItems` to ask for fewer. When the actor schema already defaults `maxItems` to 100 or less, that default stands. The law tool defaults to 20, because that Actor's schema has no `maxItems`.
+| Tool | Returns | Actor |
+|---|---|---|
+| `polish-law-mcp-server` | One Polish law result. Set `tool` to `search_legal_acts`, `get_legal_act`, `get_legal_act_text`, `list_changed_legal_acts`, `search_court_judgments`, or `get_court_judgment`, and pass `arguments`. | [Store](https://apify.com/enterprising_hamster/polish-law-mcp-server) |
+| `polish-legal-acts-eli` | Dziennik Ustaw and Monitor Polski act metadata, with optional text. | [Store](https://apify.com/enterprising_hamster/polish-legal-acts-eli) |
+| `polish-court-judgments-saos` | SAOS judgments with metadata and optional full text. | [Store](https://apify.com/enterprising_hamster/polish-court-judgments-saos) |
+| `polish-eu-funds-tenders-baza-konkurencyjnosci` | EU-funds procurement notices from Baza Konkurencyjności. | [Store](https://apify.com/enterprising_hamster/polish-eu-funds-tenders-baza-konkurencyjnosci) |
+| `cee-public-tenders` | Czech, Slovak, Hungarian, and Ukrainian public tenders. | [Store](https://apify.com/enterprising_hamster/cee-public-tenders) |
+| `polish-ev-charging-stations-eipa` | EIPA charging stations with location, connectors, power, and live status. | [Store](https://apify.com/enterprising_hamster/polish-ev-charging-stations-eipa) |
+| `polish-vehicle-registrations-cepik` | Aggregated CEPiK registration counts. No VINs or owners. | [Store](https://apify.com/enterprising_hamster/polish-vehicle-registrations-cepik) |
+| `polish-building-permits-gunb` | GUNB building permits and notifications. Private investors are anonymised. | [Store](https://apify.com/enterprising_hamster/polish-building-permits-gunb) |
+| `polish-land-parcels-uldk-zoning` | ULDK parcel location and area, plus MPZP and POG zoning. No owners. | [Store](https://apify.com/enterprising_hamster/polish-land-parcels-uldk-zoning) |
+| `polish-healthcare-facilities-rpwdl` | RPWDL facilities with address, contact, specialties, and beds. | [Store](https://apify.com/enterprising_hamster/polish-healthcare-facilities-rpwdl) |
+| `polish-developer-apartment-prices` | Developer apartment and house offers, with price per m², from dane.gov.pl. | [Store](https://apify.com/enterprising_hamster/polish-developer-apartment-prices) |
+| `polish-electricity-market-pse` | PSE electricity prices and grid rows (RCE, day-ahead, imbalance, load, generation). | [Store](https://apify.com/enterprising_hamster/polish-electricity-market-pse) |
 
-From this directory:
+`polish-mcp-servers` and `polish-mcp` list all 12. `polish-law-mcp` lists only `polish-law-mcp-server`. `polish-public-registers` lists the other 11, including `cee-public-tenders`.
+
+## Install
+
+From GitHub, without an npm publish:
 
 ```bash
+npx -y github:kamilkaczmareksolutions/polish-mcp-servers
+```
+
+Law only, or registers only:
+
+```bash
+npx -y --package github:kamilkaczmareksolutions/polish-mcp-servers polish-law-mcp
+npx -y --package github:kamilkaczmareksolutions/polish-mcp-servers polish-public-registers
+```
+
+From a checkout, `npm install` compiles the server:
+
+```bash
+git clone https://github.com/kamilkaczmareksolutions/polish-mcp-servers.git
+cd polish-mcp-servers
 npm install
-npm run build
 node dist/main.js
 ```
 
-`npx polish-mcp` runs the same process after `npm install`. Law only is `node dist/law.js` or `npx polish-law-mcp`. Registers only is `node dist/registers.js` or `npx polish-public-registers`. The registers process includes `cee-public-tenders`, which the hosted registers URL omits.
+`node dist/law.js` and `node dist/registers.js` start the other two profiles.
 
-Docker image, no secrets required for `tools/list`:
+Docker image. `tools/list` needs no secrets.
 
 ```bash
 docker build -t polish-mcp-servers .
 docker run --rm -i polish-mcp-servers
 ```
 
-Pass the token only when you want `tools/call` to run an Actor:
+Pass the token only when you want `tools/call` to run an Actor.
 
 ```bash
 docker run --rm -i -e APIFY_TOKEN=<YOUR_APIFY_TOKEN> polish-mcp-servers
 ```
 
-## Servers
+## Configure Claude Desktop and Cursor
+
+Claude Desktop reads `claude_desktop_config.json`. Cursor reads `~/.cursor/mcp.json` or `.cursor/mcp.json` in a project.
+
+```json
+{
+  "mcpServers": {
+    "polish-mcp": {
+      "command": "npx",
+      "args": ["-y", "github:kamilkaczmareksolutions/polish-mcp-servers"],
+      "env": {
+        "APIFY_TOKEN": "<YOUR_APIFY_TOKEN>"
+      }
+    },
+    "polish-law": {
+      "command": "npx",
+      "args": ["-y", "--package", "github:kamilkaczmareksolutions/polish-mcp-servers", "polish-law-mcp"],
+      "env": {
+        "APIFY_TOKEN": "<YOUR_APIFY_TOKEN>"
+      }
+    },
+    "polish-public-registers": {
+      "command": "npx",
+      "args": ["-y", "--package", "github:kamilkaczmareksolutions/polish-mcp-servers", "polish-public-registers"],
+      "env": {
+        "APIFY_TOKEN": "<YOUR_APIFY_TOKEN>"
+      }
+    }
+  }
+}
+```
+
+Omit `APIFY_TOKEN` if you only want `tools/list`.
+
+## Hosted servers
+
+The same data is also available as hosted MCP servers on [Apify](https://apify.com/enterprising_hamster). Point your client at a URL and authenticate with your Apify account. Those servers still run as Apify Actors.
+
+- **Polish Law MCP**: Polish statutes from the Sejm ELI API (Dziennik Ustaw, Monitor Polski) and court judgments from SAOS.
+- **Polish Public Registers**: 10 official Polish registers (EU-funded tenders, EV charging stations, vehicle registrations, building permits, land parcels and zoning, healthcare facilities, developer apartment prices, electricity market, legal acts, court judgments).
 
 | Server | MCP Registry name | MCP URL (Streamable HTTP) |
 |---|---|---|
@@ -52,9 +121,11 @@ https://mcp.apify.com/?tools=enterprising_hamster/polish-eu-funds-tenders-baza-k
 
 You can drop Actors from the `tools=` list to expose only the registers you need.
 
-## Polish Law MCP: tools
+### Polish Law MCP tools
 
 Apify Actor: [enterprising_hamster/polish-law-mcp-server](https://apify.com/enterprising_hamster/polish-law-mcp-server)
+
+The hosted law server exposes six tools. The local server keeps them behind the single tool `polish-law-mcp-server`.
 
 | Tool | What it does |
 |---|---|
@@ -74,7 +145,7 @@ Pricing (pay per event, FREE/BRONZE Apify plan tier):
 | Tool call returning search results or metadata | $0.005 |
 | Tool call returning the full text of a legal act or court judgment | $0.015 |
 
-## Polish Public Registers: tools
+### Polish Public Registers tools
 
 Each Actor is exposed as one MCP tool that runs the Actor. The Apify MCP server also adds four helper tools: `get-actor-run`, `get-dataset-items`, `get-key-value-store-record`, `abort-actor-run` (14 tools in total).
 
@@ -95,26 +166,22 @@ Prices are per delivered result, FREE/BRONZE Apify plan tier. Higher plan tiers 
 
 Apify platform usage may be billed on top, depending on your Apify plan.
 
-## Authentication and billing
+### Authentication and billing
 
-Both servers run under your own Apify account, and you pay for the results you request.
+Both hosted servers run under your own Apify account, and you pay for the results you request.
 
-- **OAuth** via `mcp.apify.com`: clients that support MCP OAuth sign you in to Apify. No token in the config.
-- **Bearer token**: send `Authorization: Bearer <YOUR_APIFY_TOKEN>`. Get the token at [console.apify.com/settings/integrations](https://console.apify.com/settings/integrations). Required for the Standby URL.
+- **OAuth** via `mcp.apify.com`. Clients that support MCP OAuth sign you in to Apify. No token in the config.
+- **Bearer token**. Send `Authorization: Bearer <YOUR_APIFY_TOKEN>`. Get the token at [console.apify.com/settings/integrations](https://console.apify.com/settings/integrations). Required for the Standby URL.
 
 Requests without credentials get HTTP 401.
 
-## Client configuration
+### Hosted client configuration
 
 Replace `<YOUR_APIFY_TOKEN>` with your token, or omit `headers` if your client supports OAuth.
 
-### Claude.ai and Claude Desktop
+Claude.ai and Claude Desktop. Settings → Connectors → Add custom connector, then paste the MCP URL (for example `https://mcp.apify.com/?tools=enterprising_hamster/polish-law-mcp-server`). Sign in to Apify when prompted.
 
-Settings → Connectors → Add custom connector, then paste the MCP URL (e.g. `https://mcp.apify.com/?tools=enterprising_hamster/polish-law-mcp-server`). Sign in to Apify when prompted.
-
-### Cursor
-
-`~/.cursor/mcp.json` or `.cursor/mcp.json` in a project:
+Cursor, `~/.cursor/mcp.json` or `.cursor/mcp.json` in a project:
 
 ```json
 {
@@ -135,9 +202,7 @@ Settings → Connectors → Add custom connector, then paste the MCP URL (e.g. `
 }
 ```
 
-### VS Code
-
-`.vscode/mcp.json`:
+VS Code, `.vscode/mcp.json`:
 
 ```json
 {
@@ -163,35 +228,6 @@ Settings → Connectors → Add custom connector, then paste the MCP URL (e.g. `
 
 Add `polish-public-registers` the same way with its URL.
 
-### Local stdio
-
-Use this when you run the server from this repository. Replace the path with your checkout. Hosted `url` entries above stay valid.
-
-Claude Desktop uses `claude_desktop_config.json`. Cursor uses `~/.cursor/mcp.json` or `.cursor/mcp.json`.
-
-```json
-{
-  "mcpServers": {
-    "polish-law": {
-      "command": "node",
-      "args": ["/absolute/path/to/polish-mcp-servers/dist/law.js"],
-      "env": {
-        "APIFY_TOKEN": "<YOUR_APIFY_TOKEN>"
-      }
-    },
-    "polish-public-registers": {
-      "command": "node",
-      "args": ["/absolute/path/to/polish-mcp-servers/dist/registers.js"],
-      "env": {
-        "APIFY_TOKEN": "<YOUR_APIFY_TOKEN>"
-      }
-    }
-  }
-}
-```
-
-Omit `APIFY_TOKEN` if you only want `tools/list`. A call then returns an MCP tool error that points at the token page.
-
 ## Official MCP Registry
 
 - `io.github.kamilkaczmareksolutions/polish-law-mcp`
@@ -201,7 +237,7 @@ Look them up at `https://registry.modelcontextprotocol.io/v0.1/servers?search=ka
 
 ## Data sources
 
-All data comes from official Polish public registers and open-data APIs: Sejm ELI, SAOS, Baza Konkurencyjności, EIPA (UDT), CEPiK, GUNB, GUGiK ULDK, RPWDL, dane.gov.pl, PSE. Personal data is limited: building-permit investors who are private persons are anonymised, private EV station operators are anonymised, CEPiK data is aggregated (no VINs or owners), and ULDK parcels come without owners.
+All data comes from official Polish public registers and open-data APIs: Sejm ELI, SAOS, Baza Konkurencyjności, EIPA (UDT), CEPiK, GUNB, GUGiK ULDK, RPWDL, dane.gov.pl, PSE. Personal data is limited. Building-permit investors who are private persons are anonymised, private EV station operators are anonymised, CEPiK data is aggregated (no VINs or owners), and ULDK parcels come without owners.
 
 ## License
 
