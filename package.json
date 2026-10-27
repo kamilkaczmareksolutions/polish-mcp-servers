@@ -1,7 +1,28 @@
 {
   "name": "polish-mcp-servers",
   "version": "0.1.0",
-  "private": true,
+  "description": "MCP stdio server for Polish public law and registers. Lists 12 Apify Actor tools without a token and runs them with APIFY_TOKEN.",
+  "license": "MIT",
+  "author": "Kamil Kaczmarek",
+  "homepage": "https://github.com/kamilkaczmareksolutions/polish-mcp-servers#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kamilkaczmareksolutions/polish-mcp-servers.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kamilkaczmareksolutions/polish-mcp-servers/issues"
+  },
+  "keywords": [
+    "mcp",
+    "modelcontextprotocol",
+    "poland",
+    "polish",
+    "apify",
+    "open-data",
+    "eli",
+    "saos",
+    "cepik"
+  ],
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -11,11 +32,19 @@
     "polish-law-mcp": "./dist/law.js",
     "polish-public-registers": "./dist/registers.js"
   },
+  "files": [
+    "dist",
+    "catalog",
+    "LICENSE",
+    "README.md"
+  ],
   "exports": {
     ".": "./dist/main.js"
   },
   "scripts": {
     "build": "tsc",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
     "test": "npm run build && node --test dist/stdio.test.js",
     "start": "node dist/main.js"
   },
