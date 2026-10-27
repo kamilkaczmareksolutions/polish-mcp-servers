@@ -31,15 +31,23 @@ The full tool and parameter descriptions that clients see live in [`catalog/tool
 
 ## Install
 
-From GitHub, without an npm publish:
+From npm ([`polish-mcp-servers`](https://www.npmjs.com/package/polish-mcp-servers)):
 
 ```bash
-npx -y github:kamilkaczmareksolutions/polish-mcp-servers
+npx -y polish-mcp-servers
 ```
 
 Law only, or registers only:
 
 ```bash
+npx -y --package polish-mcp-servers polish-law-mcp
+npx -y --package polish-mcp-servers polish-public-registers
+```
+
+Alternative, straight from GitHub (latest `main`, no npm registry):
+
+```bash
+npx -y github:kamilkaczmareksolutions/polish-mcp-servers
 npx -y --package github:kamilkaczmareksolutions/polish-mcp-servers polish-law-mcp
 npx -y --package github:kamilkaczmareksolutions/polish-mcp-servers polish-public-registers
 ```
@@ -77,21 +85,21 @@ Claude Desktop reads `claude_desktop_config.json`. Cursor reads `~/.cursor/mcp.j
   "mcpServers": {
     "polish-mcp": {
       "command": "npx",
-      "args": ["-y", "github:kamilkaczmareksolutions/polish-mcp-servers"],
+      "args": ["-y", "polish-mcp-servers"],
       "env": {
         "APIFY_TOKEN": "<YOUR_APIFY_TOKEN>"
       }
     },
     "polish-law": {
       "command": "npx",
-      "args": ["-y", "--package", "github:kamilkaczmareksolutions/polish-mcp-servers", "polish-law-mcp"],
+      "args": ["-y", "--package", "polish-mcp-servers", "polish-law-mcp"],
       "env": {
         "APIFY_TOKEN": "<YOUR_APIFY_TOKEN>"
       }
     },
     "polish-public-registers": {
       "command": "npx",
-      "args": ["-y", "--package", "github:kamilkaczmareksolutions/polish-mcp-servers", "polish-public-registers"],
+      "args": ["-y", "--package", "polish-mcp-servers", "polish-public-registers"],
       "env": {
         "APIFY_TOKEN": "<YOUR_APIFY_TOKEN>"
       }
