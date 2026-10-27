@@ -15,6 +15,13 @@ type CatalogRow = {
   inputSchema: { properties?: Record<string, { default?: unknown; maximum?: unknown }> };
 };
 
+const descriptions = JSON.parse(
+  readFileSync(new URL("../catalog/tool-descriptions.json", import.meta.url), "utf8"),
+) as Record<string, { description: string; parameters?: Record<string, string> }>;
+const packageVersion = (JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")) as {
+  version: string;
+}).version;
+
 const catalog = (JSON.parse(readFileSync(new URL("../catalog/actors.json", import.meta.url), "utf8")) as CatalogRow[])
   .filter((row) => row.isPublic);
 
@@ -74,6 +81,7 @@ function schemaOf(tool: { inputSchema: unknown }): {
 test("tools/list works without a token", async () => {
   await withClient("dist/main.js", childEnv(), async (client) => {
     assert.equal(client.getServerVersion()?.name, "polish-mcp");
+    assert.equal(client.getServerVersion()?.version, packageVersion);
     const listed = await client.listTools();
     assert.deepEqual(
       listed.tools.map((tool) => tool.name),
@@ -82,6 +90,16 @@ test("tools/list works without a token", async () => {
     for (const tool of listed.tools) {
       const row = catalog.find((entry) => entry.name === tool.name);
       assert.ok(row);
+      const text = descriptions[tool.name];
+      assert.ok(text, `${tool.name} has a description entry`);
+      assert.equal(tool.description, text.description);
+      for (const phrase of ["Read-only", "APIFY_TOKEN", "paid run", "300 s"]) {
+        assert.equal(tool.description?.includes(phrase), true, `${tool.name} description mentions ${phrase}`);
+      }
+      assert.equal(tool.annotations?.readOnlyHint, true);
+      assert.equal(tool.annotations?.destructiveHint, false);
+      assert.equal(tool.annotations?.idempotentHint, true);
+      assert.equal(tool.annotations?.openWorldHint, true);
       const listedProperties = schemaOf(tool).properties ?? {};
       const catalogProperties = row.inputSchema.properties ?? {};
       assert.equal(listedProperties.maxItems !== undefined, true);

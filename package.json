@@ -1,6 +1,6 @@
 {
   "name": "polish-mcp-servers",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "MCP stdio server for Polish public law and registers. Lists 12 Apify Actor tools without a token and runs them with APIFY_TOKEN.",
   "license": "MIT",
   "author": "Kamil Kaczmarek",

@@ -8,6 +8,8 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 const CATALOG_URL = new URL("../catalog/actors.json", import.meta.url);
+const DESCRIPTIONS_URL = new URL("../catalog/tool-descriptions.json", import.meta.url);
+const PACKAGE_URL = new URL("../package.json", import.meta.url);
 const TOKEN_URL = "https://console.apify.com/settings/integrations";
 const MISSING_TOKEN = `Missing APIFY_TOKEN. Create a token at ${TOKEN_URL} and set APIFY_TOKEN.`;
 
@@ -16,7 +18,6 @@ const ITEM_CEILING = 100;
 const RESPONSE_BYTE_CAP = 256 * 1024;
 const SYNC_TIMEOUT_SECS = 300;
 const FETCH_ABORT_MS = 320_000;
-const SERVER_VERSION = "0.1.0";
 
 const LAW_INSTRUCTIONS =
   "One tool runs the law actor. Set tool to an enum value and pass arguments. maxItems caps returned dataset rows.";
@@ -41,6 +42,19 @@ type ListedSchema = {
   [key: string]: unknown;
 };
 
+// Every tool proxies a public read of an official register through an Apify Actor run.
+const TOOL_ANNOTATIONS = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: true,
+} as const;
+
+type ToolText = {
+  description: string;
+  parameters: Record<string, string>;
+};
+
 type Tool = {
   name: string;
   title: string;
@@ -61,10 +75,10 @@ type Prepared =
   | { kind: "ok"; actorId: string; buildNumber: string; input: JsonObject; limit: number };
 
 export async function serve(profile: Profile): Promise<void> {
-  const tools = selectProfile(loadCatalog(CATALOG_URL), profile);
+  const tools = selectProfile(loadCatalog(CATALOG_URL, DESCRIPTIONS_URL), profile);
   const label = serverLabel(profile);
   const server = new Server(
-    { name: label.name, version: SERVER_VERSION },
+    { name: label.name, version: readVersion(PACKAGE_URL) },
     { capabilities: { tools: {} }, instructions: label.instructions },
   );
 
@@ -74,6 +88,7 @@ export async function serve(profile: Profile): Promise<void> {
       title: tool.title,
       description: tool.description,
       inputSchema: tool.inputSchema,
+      annotations: { title: tool.title, ...TOOL_ANNOTATIONS },
     })),
   }));
 
@@ -105,7 +120,40 @@ function serverLabel(profile: Profile): { name: string; instructions: string } {
   }
 }
 
-function loadCatalog(url: URL): Tool[] {
+function readVersion(url: URL): string {
+  const parsed: unknown = JSON.parse(readFileSync(fileURLToPath(url), "utf8"));
+  if (!isObject(parsed)) {
+    throw new Error("package.json must be a JSON object.");
+  }
+  return requiredString(parsed.version, "version");
+}
+
+function loadToolTexts(url: URL): Map<string, ToolText> {
+  const parsed: unknown = JSON.parse(readFileSync(fileURLToPath(url), "utf8"));
+  if (!isObject(parsed)) {
+    throw new Error("Tool descriptions must be a JSON object keyed by tool name.");
+  }
+  const texts = new Map<string, ToolText>();
+  for (const [name, entry] of Object.entries(parsed)) {
+    if (!isObject(entry)) {
+      throw new Error(`Tool description for ${name} must be an object.`);
+    }
+    const parameters: Record<string, string> = {};
+    if (entry.parameters !== undefined) {
+      if (!isObject(entry.parameters)) {
+        throw new Error(`Tool ${name} parameters must be an object.`);
+      }
+      for (const [key, text] of Object.entries(entry.parameters)) {
+        parameters[key] = requiredString(text, `${name}.parameters.${key}`);
+      }
+    }
+    texts.set(name, { description: requiredString(entry.description, `${name}.description`), parameters });
+  }
+  return texts;
+}
+
+function loadCatalog(url: URL, descriptionsUrl: URL): Tool[] {
+  const texts = loadToolTexts(descriptionsUrl);
   const parsed: unknown = JSON.parse(readFileSync(fileURLToPath(url), "utf8"));
   if (!Array.isArray(parsed)) {
     throw new Error("Actor catalog must be a JSON array.");
@@ -116,7 +164,7 @@ function loadCatalog(url: URL): Tool[] {
     if (!isObject(row) || row.isPublic !== true) {
       continue;
     }
-    const tool = bindTool(row);
+    const tool = bindTool(row, texts);
     if (names.has(tool.name)) {
       throw new Error(`Duplicate actor name ${tool.name}.`);
     }
@@ -126,7 +174,7 @@ function loadCatalog(url: URL): Tool[] {
   return tools;
 }
 
-function bindTool(row: JsonObject): Tool {
+function bindTool(row: JsonObject, texts: ReadonlyMap<string, ToolText>): Tool {
   const name = requiredString(row.name, "name");
   const actorId = requiredString(row.actorId, "actorId");
   const slash = actorId.indexOf("/");
@@ -134,14 +182,34 @@ function bindTool(row: JsonObject): Tool {
     throw new Error(`Actor id ${actorId} must look like owner/name.`);
   }
   const title = requiredString(row.title, "title");
-  const description = requiredString(row.description, "description");
+  const text = texts.get(name);
+  if (text === undefined) {
+    throw new Error(`Tool ${name} has no entry in catalog/tool-descriptions.json.`);
+  }
+  const description = text.description;
   const buildNumber = requiredString(row.buildNumber, "buildNumber");
   if (!isObject(row.inputSchema) || row.inputSchema.type !== "object") {
     throw new Error(`Actor ${name} inputSchema must be a JSON object schema.`);
   }
   const router = isLawRouter(row.inputSchema);
-  const { inputSchema, cap } = listSchema(row.inputSchema);
+  const { inputSchema, cap } = listSchema(describeParameters(name, row.inputSchema, text.parameters));
   return { name, title, description, inputSchema, actorId, buildNumber, router, cap };
+}
+
+function describeParameters(name: string, schema: JsonObject, texts: Record<string, string>): JsonObject {
+  const properties = schema.properties;
+  if (!isObject(properties)) {
+    throw new Error(`Actor ${name} inputSchema.properties must be an object.`);
+  }
+  const described: JsonObject = { ...properties };
+  for (const [key, description] of Object.entries(texts)) {
+    const property = properties[key];
+    if (!isObject(property)) {
+      throw new Error(`Tool ${name} describes unknown parameter ${key}.`);
+    }
+    described[key] = { ...property, description };
+  }
+  return { ...schema, properties: described };
 }
 
 function isLawRouter(schema: JsonObject): boolean {
@@ -182,7 +250,8 @@ function listSchema(schema: JsonObject): { inputSchema: ListedSchema; cap: ItemC
         maxItems: {
           type: "integer",
           title: "Maximum items",
-          description: "Maximum dataset items returned to the client.",
+          description:
+            "Maximum dataset items returned to the client (1-100), applied by this server to the run's dataset.",
           default: cap.fallback,
           minimum: cap.min,
           maximum: cap.max,
