@@ -25,7 +25,7 @@ Each call returns at most 100 dataset items and at most 256 KiB of JSON. Pass `m
 | `polish-developer-apartment-prices` | Developer apartment and house offers, with price per m², from dane.gov.pl. | [Store](https://apify.com/enterprising_hamster/polish-developer-apartment-prices) |
 | `polish-electricity-market-pse` | PSE electricity prices and grid rows (RCE, day-ahead, imbalance, load, generation). | [Store](https://apify.com/enterprising_hamster/polish-electricity-market-pse) |
 
-`polish-mcp` lists all 12. `polish-law-mcp` lists only `polish-law-mcp-server`. `polish-public-registers` lists the other 11, including `cee-public-tenders`.
+`polish-mcp-servers` and `polish-mcp` list all 12. `polish-law-mcp` lists only `polish-law-mcp-server`. `polish-public-registers` lists the other 11, including `cee-public-tenders`.
 
 ## Install
 

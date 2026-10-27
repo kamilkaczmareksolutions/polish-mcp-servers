@@ -28,6 +28,7 @@
     "node": ">=20"
   },
   "bin": {
+    "polish-mcp-servers": "./dist/main.js",
     "polish-mcp": "./dist/main.js",
     "polish-law-mcp": "./dist/law.js",
     "polish-public-registers": "./dist/registers.js"
