@@ -6,6 +6,8 @@ Local [Model Context Protocol](https://modelcontextprotocol.io) server for Polis
 
 `tools/list` answers with no `APIFY_TOKEN` and no network. `tools/call` runs that Actor on your Apify account. Create a token at [console.apify.com/settings/integrations](https://console.apify.com/settings/integrations) and set `APIFY_TOKEN`. A call without a token returns an MCP tool error that points at that page.
 
+AI agents without an Apify account can buy a prepaid Apify API token at [agi.apify.com](https://agi.apify.com) (x402, MPP or Skyfire; minimum $1, expires after 14 days, unused balance is not refunded) and set it as `APIFY_TOKEN`. See [Agentic payments with x402](https://docs.apify.com/integrations/x402).
+
 Each call returns at most 100 dataset items and at most 256 KiB of JSON. Pass `maxItems` to ask for fewer. When the Actor schema already defaults `maxItems` to 100 or less, that default stands. The law tool defaults to 20, because that Actor's schema has no `maxItems`.
 
 ## Tools
