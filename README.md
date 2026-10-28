@@ -2,7 +2,7 @@
 
 [![Glama](https://glama.ai/mcp/servers/kamilkaczmareksolutions/polish-mcp-servers/badge)](https://glama.ai/mcp/servers/kamilkaczmareksolutions/polish-mcp-servers)
 
-Local [Model Context Protocol](https://modelcontextprotocol.io) server for Polish public data. It speaks stdio and exposes 12 tools, one for each public Apify Actor by [enterprising_hamster](https://apify.com/enterprising_hamster).
+Local [Model Context Protocol](https://modelcontextprotocol.io) server for Polish public data. It speaks stdio and exposes 13 tools, one for each public Apify Actor by [enterprising_hamster](https://apify.com/enterprising_hamster).
 
 `tools/list` answers with no `APIFY_TOKEN` and no network. `tools/call` runs that Actor on your Apify account. Create a token at [console.apify.com/settings/integrations](https://console.apify.com/settings/integrations) and set `APIFY_TOKEN`. A call without a token returns an MCP tool error that points at that page.
 
@@ -26,10 +26,11 @@ Each call returns at most 100 dataset items and at most 256 KiB of JSON. Pass `m
 | `polish-healthcare-facilities-rpwdl` | RPWDL facilities with address, contact, specialties, and beds. | [Store](https://apify.com/enterprising_hamster/polish-healthcare-facilities-rpwdl) |
 | `polish-developer-apartment-prices` | Developer apartment and house offers, with price per m², from dane.gov.pl. | [Store](https://apify.com/enterprising_hamster/polish-developer-apartment-prices) |
 | `polish-electricity-market-pse` | PSE electricity prices and grid rows (RCE, day-ahead, imbalance, load, generation). | [Store](https://apify.com/enterprising_hamster/polish-electricity-market-pse) |
+| `polish-new-companies-krs` | New and changed companies from the KRS bulletin with NIP, REGON, PKD, and share capital. No personal data. | [Store](https://apify.com/enterprising_hamster/polish-new-companies-krs) |
 
 The full tool and parameter descriptions that clients see live in [`catalog/tool-descriptions.json`](catalog/tool-descriptions.json). Every tool is annotated `readOnlyHint: true`, `destructiveHint: false`, `idempotentHint: true`, `openWorldHint: true`: it only reads the public source, but each `tools/call` starts a paid Apify Actor run, billed pay-per-event to the Apify account behind `APIFY_TOKEN`, and waits up to 300 s for it.
 
-`polish-mcp-servers` and `polish-mcp` list all 12. `polish-law-mcp` lists only `polish-law-mcp-server`. `polish-public-registers` lists the other 11, including `cee-public-tenders`.
+`polish-mcp-servers` and `polish-mcp` list all 13. `polish-law-mcp` lists only `polish-law-mcp-server`. `polish-public-registers` lists the other 12, including `cee-public-tenders`.
 
 ## Install
 
@@ -117,7 +118,7 @@ Omit `APIFY_TOKEN` if you only want `tools/list`.
 The same data is also available as hosted MCP servers on [Apify](https://apify.com/enterprising_hamster). Point your client at a URL and authenticate with your Apify account. Those servers still run as Apify Actors.
 
 - **Polish Law MCP**: Polish statutes from the Sejm ELI API (Dziennik Ustaw, Monitor Polski) and court judgments from SAOS.
-- **Polish Public Registers**: 10 official Polish registers (EU-funded tenders, EV charging stations, vehicle registrations, building permits, land parcels and zoning, healthcare facilities, developer apartment prices, electricity market, legal acts, court judgments).
+- **Polish Public Registers**: 11 official Polish registers (EU-funded tenders, EV charging stations, vehicle registrations, building permits, land parcels and zoning, healthcare facilities, developer apartment prices, electricity market, new companies from KRS, legal acts, court judgments).
 
 | Server | MCP Registry name | MCP URL (Streamable HTTP) |
 |---|---|---|
@@ -128,7 +129,7 @@ The same data is also available as hosted MCP servers on [Apify](https://apify.c
 ### Polish Public Registers URL
 
 ```
-https://mcp.apify.com/?tools=enterprising_hamster/polish-eu-funds-tenders-baza-konkurencyjnosci,enterprising_hamster/polish-ev-charging-stations-eipa,enterprising_hamster/polish-vehicle-registrations-cepik,enterprising_hamster/polish-building-permits-gunb,enterprising_hamster/polish-land-parcels-uldk-zoning,enterprising_hamster/polish-healthcare-facilities-rpwdl,enterprising_hamster/polish-developer-apartment-prices,enterprising_hamster/polish-electricity-market-pse,enterprising_hamster/polish-legal-acts-eli,enterprising_hamster/polish-court-judgments-saos
+https://mcp.apify.com/?tools=enterprising_hamster/polish-eu-funds-tenders-baza-konkurencyjnosci,enterprising_hamster/polish-ev-charging-stations-eipa,enterprising_hamster/polish-vehicle-registrations-cepik,enterprising_hamster/polish-building-permits-gunb,enterprising_hamster/polish-land-parcels-uldk-zoning,enterprising_hamster/polish-healthcare-facilities-rpwdl,enterprising_hamster/polish-developer-apartment-prices,enterprising_hamster/polish-electricity-market-pse,enterprising_hamster/polish-new-companies-krs,enterprising_hamster/polish-legal-acts-eli,enterprising_hamster/polish-court-judgments-saos
 ```
 
 You can drop Actors from the `tools=` list to expose only the registers you need.
@@ -159,7 +160,7 @@ Pricing (pay per event, FREE/BRONZE Apify plan tier):
 
 ### Polish Public Registers tools
 
-Each Actor is exposed as one MCP tool that runs the Actor. The Apify MCP server also adds four helper tools: `get-actor-run`, `get-dataset-items`, `get-key-value-store-record`, `abort-actor-run` (14 tools in total).
+Each Actor is exposed as one MCP tool that runs the Actor. The Apify MCP server also adds four helper tools: `get-actor-run`, `get-dataset-items`, `get-key-value-store-record`, `abort-actor-run` (15 tools in total).
 
 Prices are per delivered result, FREE/BRONZE Apify plan tier. Higher plan tiers pay less; see each Actor page.
 
@@ -173,6 +174,7 @@ Prices are per delivered result, FREE/BRONZE Apify plan tier. Higher plan tiers 
 | Healthcare facilities (RPWDL) | [polish-healthcare-facilities-rpwdl](https://apify.com/enterprising_hamster/polish-healthcare-facilities-rpwdl) | $0.004 facility |
 | Developer apartment prices (dane.gov.pl) | [polish-developer-apartment-prices](https://apify.com/enterprising_hamster/polish-developer-apartment-prices) | $0.002 offer; $0.004 price change |
 | Electricity market (PSE API) | [polish-electricity-market-pse](https://apify.com/enterprising_hamster/polish-electricity-market-pse) | $0.0003 market data row |
+| New and changed companies (KRS API, Ministry of Justice) | [polish-new-companies-krs](https://apify.com/enterprising_hamster/polish-new-companies-krs) | $0.004 company |
 | Legal acts (Sejm ELI) | [polish-legal-acts-eli](https://apify.com/enterprising_hamster/polish-legal-acts-eli) | $0.002 act metadata; $0.008 act with text |
 | Court judgments (SAOS) | [polish-court-judgments-saos](https://apify.com/enterprising_hamster/polish-court-judgments-saos) | $0.003 judgment metadata; $0.01 judgment with full text |
 
@@ -205,7 +207,7 @@ Cursor, `~/.cursor/mcp.json` or `.cursor/mcp.json` in a project:
       }
     },
     "polish-public-registers": {
-      "url": "https://mcp.apify.com/?tools=enterprising_hamster/polish-eu-funds-tenders-baza-konkurencyjnosci,enterprising_hamster/polish-ev-charging-stations-eipa,enterprising_hamster/polish-vehicle-registrations-cepik,enterprising_hamster/polish-building-permits-gunb,enterprising_hamster/polish-land-parcels-uldk-zoning,enterprising_hamster/polish-healthcare-facilities-rpwdl,enterprising_hamster/polish-developer-apartment-prices,enterprising_hamster/polish-electricity-market-pse,enterprising_hamster/polish-legal-acts-eli,enterprising_hamster/polish-court-judgments-saos",
+      "url": "https://mcp.apify.com/?tools=enterprising_hamster/polish-eu-funds-tenders-baza-konkurencyjnosci,enterprising_hamster/polish-ev-charging-stations-eipa,enterprising_hamster/polish-vehicle-registrations-cepik,enterprising_hamster/polish-building-permits-gunb,enterprising_hamster/polish-land-parcels-uldk-zoning,enterprising_hamster/polish-healthcare-facilities-rpwdl,enterprising_hamster/polish-developer-apartment-prices,enterprising_hamster/polish-electricity-market-pse,enterprising_hamster/polish-new-companies-krs,enterprising_hamster/polish-legal-acts-eli,enterprising_hamster/polish-court-judgments-saos",
       "headers": {
         "Authorization": "Bearer <YOUR_APIFY_TOKEN>"
       }
@@ -249,7 +251,7 @@ Look them up at `https://registry.modelcontextprotocol.io/v0.1/servers?search=ka
 
 ## Data sources
 
-All data comes from official Polish public registers and open-data APIs: Sejm ELI, SAOS, Baza Konkurencyjności, EIPA (UDT), CEPiK, GUNB, GUGiK ULDK, RPWDL, dane.gov.pl, PSE. Personal data is limited. Building-permit investors who are private persons are anonymised, private EV station operators are anonymised, CEPiK data is aggregated (no VINs or owners), and ULDK parcels come without owners.
+All data comes from official Polish public registers and open-data APIs: Sejm ELI, SAOS, Baza Konkurencyjności, EIPA (UDT), CEPiK, GUNB, GUGiK ULDK, RPWDL, dane.gov.pl, PSE, KRS. Personal data is limited. Building-permit investors who are private persons are anonymised, private EV station operators are anonymised, CEPiK data is aggregated (no VINs or owners), ULDK parcels come without owners, and KRS rows carry company-level fields only (no board members or shareholders).
 
 ## License
 
