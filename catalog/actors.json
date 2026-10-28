@@ -2375,5 +2375,132 @@
         }
       }
     }
+  },
+  {
+    "actorId": "enterprising_hamster/polish-new-companies-krs",
+    "name": "polish-new-companies-krs",
+    "title": "Poland New Companies API – KRS Registrations Feed",
+    "description": "New and changed Polish companies every day from the official KRS register (nowe spółki KRS): name, NIP, REGON, address, PKD, share capital, registration date. No personal data. For leads, KYC, CRM and AI agents (MCP). CSV, JSON, Excel.",
+    "isPublic": true,
+    "buildId": "3yawBGDegPz9hilZA",
+    "buildNumber": "0.1.2",
+    "inputSchema": {
+      "title": "Poland new & changed companies (KRS)",
+      "type": "object",
+      "schemaVersion": 1,
+      "properties": {
+        "dateFrom": {
+          "title": "From date",
+          "type": "string",
+          "editor": "textfield",
+          "description": "First bulletin day (YYYY-MM-DD, Europe/Warsaw). Empty with dateTo empty means yesterday. One day when only dateFrom is set.",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "dateTo": {
+          "title": "To date",
+          "type": "string",
+          "editor": "textfield",
+          "description": "Last bulletin day (inclusive). Must be used together with dateFrom. At most 31 days in the range.",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "events": {
+          "title": "Events",
+          "type": "array",
+          "editor": "select",
+          "description": "New = registration date in the window. Changed = appeared on the bulletin but registered earlier. Last-entry date does not reclassify.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "new",
+              "changed"
+            ],
+            "enumTitles": [
+              "New registrations",
+              "Changed companies"
+            ]
+          },
+          "default": [
+            "new",
+            "changed"
+          ]
+        },
+        "pkd": {
+          "title": "PKD codes",
+          "type": "array",
+          "editor": "stringList",
+          "description": "Match full PKD codes or prefixes (e.g. 93 matches 93.29.B). Empty = any activity.",
+          "default": []
+        },
+        "voivodeships": {
+          "title": "Voivodeships",
+          "type": "array",
+          "editor": "select",
+          "description": "Registered seat must be in one of these voivodeships. Empty = whole country.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "dolnośląskie",
+              "kujawsko-pomorskie",
+              "lubelskie",
+              "lubuskie",
+              "łódzkie",
+              "małopolskie",
+              "mazowieckie",
+              "opolskie",
+              "podkarpackie",
+              "podlaskie",
+              "pomorskie",
+              "śląskie",
+              "świętokrzyskie",
+              "warmińsko-mazurskie",
+              "wielkopolskie",
+              "zachodniopomorskie"
+            ],
+            "enumTitles": [
+              "dolnośląskie",
+              "kujawsko-pomorskie",
+              "lubelskie",
+              "lubuskie",
+              "łódzkie",
+              "małopolskie",
+              "mazowieckie",
+              "opolskie",
+              "podkarpackie",
+              "podlaskie",
+              "pomorskie",
+              "śląskie",
+              "świętokrzyskie",
+              "warmińsko-mazurskie",
+              "wielkopolskie",
+              "zachodniopomorskie"
+            ]
+          },
+          "default": []
+        },
+        "legalForms": {
+          "title": "Legal forms",
+          "type": "array",
+          "editor": "stringList",
+          "description": "Exact forma prawna strings after trimming. Empty = any form.",
+          "default": []
+        },
+        "minShareCapital": {
+          "title": "Minimum share capital",
+          "type": "number",
+          "editor": "number",
+          "description": "Companies without share capital fail this filter when set.",
+          "minimum": 0
+        },
+        "maxItems": {
+          "title": "Max companies",
+          "type": "integer",
+          "editor": "number",
+          "description": "Stop after this many companies are saved (default keeps Start runs cheap).",
+          "default": 20,
+          "minimum": 1,
+          "maximum": 20000
+        }
+      }
+    }
   }
 ]
