@@ -1,6 +1,40 @@
 # Polish MCP servers
 
 [![Glama](https://glama.ai/mcp/servers/kamilkaczmareksolutions/polish-mcp-servers/badge)](https://glama.ai/mcp/servers/kamilkaczmareksolutions/polish-mcp-servers)
+[![npm](https://img.shields.io/npm/v/polish-mcp-servers)](https://www.npmjs.com/package/polish-mcp-servers)
+![License: MIT](https://img.shields.io/badge/license-MIT-blue)
+
+**Give Claude, Cursor or any MCP client one-command access to Polish public data: statutes, court judgments, KRS companies, tenders, building permits, land parcels, EV chargers, electricity prices and more (13 tools).**
+
+![Demo: an MCP client lists 13 tools over stdio, then calls one without APIFY_TOKEN and gets a clear error](docs/demo.gif)
+
+<sub>Real run on a fresh checkout with no `APIFY_TOKEN`: `tools/list` works offline, `tools/call` returns an MCP tool error pointing to the token page.</sub>
+
+## Why
+
+Polish public data is spread over a dozen official APIs and portals (Sejm ELI, SAOS, KRS, CEPiK, GUNB, ULDK, PSE, dane.gov.pl ...), each with its own format, paging and quirks. LLM agents can't use them out of the box. This server wraps them as MCP tools with typed input schemas and read-only annotations, so an agent can search acts, read a judgment, or pull EV chargers, building permits or electricity prices without you writing glue code.
+
+## Quick start
+
+```bash
+npx -y polish-mcp-servers          # all 13 tools
+```
+
+Then add it to your client (Claude Desktop, Cursor, VS Code: see [Configure Claude Desktop and Cursor](#configure-claude-desktop-and-cursor)) with `APIFY_TOKEN` in `env`.
+
+## How it works
+
+- Stdio MCP server built on `@modelcontextprotocol/sdk`. Three profiles: `polish-mcp-servers` (all 13 tools), `polish-law-mcp` (law only), `polish-public-registers` (the other 12).
+- The tool list, input schemas and descriptions come from a bundled catalog (`catalog/`), so `tools/list` needs no token and no network.
+- `tools/call` runs the matching public Apify Actor with `run-sync-get-dataset-items` (pinned build, up to 300 s) on your Apify account and returns the dataset items as JSON.
+
+## Limitations
+
+- Every `tools/call` starts a paid Apify Actor run, billed pay-per-event to the account behind `APIFY_TOKEN` (prices below). Listing tools is free.
+- Responses are capped at 100 items and 256 KiB of JSON per call.
+- Data is only as fresh and complete as the upstream public source.
+
+## Details
 
 Local [Model Context Protocol](https://modelcontextprotocol.io) server for Polish public data. It speaks stdio and exposes 13 tools, one for each public Apify Actor by [enterprising_hamster](https://apify.com/enterprising_hamster).
 
