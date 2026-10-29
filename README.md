@@ -6,9 +6,9 @@
 
 **Give Claude, Cursor or any MCP client one-command access to Polish public data: statutes, court judgments, KRS companies, tenders, building permits, land parcels, EV chargers, electricity prices and more (13 tools).**
 
-![Demo: an MCP client lists 13 tools over stdio, then calls one without APIFY_TOKEN and gets a clear error](docs/demo.gif)
+![Demo: an MCP client lists the 13 tools over stdio, then calls polish-new-companies-krs and gets one company back as JSON {items, truncated}](docs/demo.gif)
 
-<sub>Real run on a fresh checkout with no `APIFY_TOKEN`: `tools/list` works offline, `tools/call` returns an MCP tool error pointing to the token page.</sub>
+<sub>Staged demo with sample output; real runs need an Apify token. The tool list is real; the company in the result is fictional, laid out the way the server returns it (`{items, truncated}` with the KRS Actor's dataset fields).</sub>
 
 ## Why
 
