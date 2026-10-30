@@ -2502,5 +2502,105 @@
         }
       }
     }
+  },
+  {
+    "actorId": "enterprising_hamster/polish-company-lookup-regon",
+    "name": "polish-company-lookup-regon",
+    "title": "Poland Company Lookup API – REGON, NIP, KRS",
+    "description": "Look up a Polish company by NIP, REGON or KRS in the official GUS REGON register: name, address, PKD, dates and optional VAT status. No phone, fax or email. For KYC, CRM and AI agents (MCP).",
+    "isPublic": true,
+    "buildId": "AEMWS4UulvF2UZSUU",
+    "buildNumber": "0.1.3",
+    "inputSchema": {
+      "title": "Poland company lookup (REGON)",
+      "type": "object",
+      "schemaVersion": 1,
+      "properties": {
+        "nips": {
+          "title": "NIP numbers",
+          "type": "array",
+          "editor": "stringList",
+          "description": "Tax identifiers (NIP). Spaces, hyphens and a leading PL are ignored. Invalid checksums are returned as found=false and are not charged.",
+          "default": [
+            "7740001454",
+            "6920000013",
+            "5250007738",
+            "5260250274"
+          ]
+        },
+        "regons": {
+          "title": "REGON numbers",
+          "type": "array",
+          "editor": "stringList",
+          "description": "9-digit subjects or 14-digit local units. Checksums are validated.",
+          "default": [
+            "000331501"
+          ]
+        },
+        "krsNumbers": {
+          "title": "KRS numbers",
+          "type": "array",
+          "editor": "stringList",
+          "description": "Court numbers. Shorter values are zero-padded to 10 digits. Looked up one at a time.",
+          "default": []
+        },
+        "identifiers": {
+          "title": "Mixed identifiers",
+          "type": "array",
+          "editor": "stringList",
+          "description": "Optional prefixes NIP:, REGON: and KRS:. Without a prefix, 9 or 14 digits are a REGON and 10 digits with a valid NIP checksum are a NIP. Anything else returns the error \"ambiguous, use prefix\".",
+          "default": []
+        },
+        "gusApiKey": {
+          "title": "GUS API key",
+          "type": "string",
+          "editor": "textfield",
+          "description": "Optional. Your own production BIR1 user key from GUS. Leave empty: the Actor uses its own production key.",
+          "isSecret": true
+        },
+        "useTestEnvironment": {
+          "title": "Use GUS test environment",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "When no production key is set, call the public GUS test service. Data is anonymized and frozen around 8 November 2014. Ignored when a key is set.",
+          "default": false
+        },
+        "includeLocalUnits": {
+          "title": "Include local units",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "Nest up to 50 local units (14-digit REGON) on each company. No extra charge. A 14-digit REGON in the input is its own row.",
+          "default": false
+        },
+        "includeSoleTraders": {
+          "title": "Include sole traders",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "When false, a sole trader (JDG) is returned with found=true and skipped=sole_trader and is not charged.",
+          "default": true
+        },
+        "soleTraderFullAddress": {
+          "title": "Full address for sole traders",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "Include street, building and apartment for a sole trader. Default is city, postal code, municipality, county and voivodeship only.",
+          "default": false
+        },
+        "checkVatStatus": {
+          "title": "Check VAT status",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "Ask the Ministry of Finance WL2 status method. Adds vatStatus, vatCheckedAt and vatRequestId. On failure the company is still returned with vatError. No bank accounts and no people.",
+          "default": false
+        },
+        "maxItems": {
+          "title": "Max companies",
+          "type": "integer",
+          "editor": "number",
+          "description": "Stop after this many charged companies. Empty means no cap. Not-found rows and skipped sole traders do not count.",
+          "minimum": 1
+        }
+      }
+    }
   }
 ]
