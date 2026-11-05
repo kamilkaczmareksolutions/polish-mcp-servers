@@ -2602,5 +2602,239 @@
         }
       }
     }
+  },
+  {
+    "actorId": "enterprising_hamster/ukraine-prozorro-tenders",
+    "name": "ukraine-prozorro-tenders",
+    "title": "Ukraine Prozorro Tenders API – English, CPV & Daily Alerts",
+    "description": "Ukraine public tenders from the official Prozorro API for foreign contractors and reconstruction work: CPV, keywords, delivery oblast, UAH value, deadlines, links. Daily only-new alerts. JSON, CSV, Excel.",
+    "isPublic": true,
+    "buildId": "Uw5LNJaa3bYp5QL6m",
+    "buildNumber": "0.1.3",
+    "inputSchema": {
+      "schemaVersion": 1,
+      "title": "Ukraine Prozorro tenders input",
+      "type": "object",
+      "properties": {
+        "lastDays": {
+          "title": "Modified in the last N days",
+          "type": "integer",
+          "editor": "number",
+          "minimum": 1,
+          "maximum": 90,
+          "description": "Walk the modification feed newest first until dateModified is older than this window. Publication filters apply on the tender document.",
+          "default": 1,
+          "prefill": 1
+        },
+        "onlyOpen": {
+          "title": "Only open competitive tenders",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "Keep active.enquiries and active.tendering only. Direct awards (reporting, negotiation) are always excluded.",
+          "default": true,
+          "prefill": true
+        },
+        "includeDetails": {
+          "title": "Include description text",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "When enabled, store Prozorro's description and charge the tender-with-details event.",
+          "default": false,
+          "prefill": false
+        },
+        "maxItems": {
+          "title": "Maximum tenders to save",
+          "type": "integer",
+          "editor": "number",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Stop scheduling new detail requests once this many rows are pushed.",
+          "default": 50,
+          "prefill": 50
+        },
+        "maxRequestsPerSecond": {
+          "title": "Maximum requests per second",
+          "type": "number",
+          "editor": "number",
+          "minimum": 0.2,
+          "maximum": 5,
+          "description": "Minimum spacing between list and detail HTTP starts. The list docs describe a separate sync cadence of about five minutes, which is not this cap.",
+          "default": 5,
+          "prefill": 5
+        },
+        "onlyNew": {
+          "title": "Only tenders not seen before",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "Skip ids stored under stateKey in the ukraine-prozorro-seen key-value store (50,000 ids per key).",
+          "default": false,
+          "prefill": false
+        },
+        "stateKey": {
+          "title": "State key for only-new runs",
+          "type": "string",
+          "editor": "textfield",
+          "isSecret": true,
+          "description": "Key in the seen store when onlyNew is true. Use a unique name per alert task."
+        },
+        "keywords": {
+          "title": "Keywords",
+          "type": "array",
+          "editor": "stringList",
+          "description": "Optional. Keep tenders whose title, English title, description, or item text contains any keyword (case- and accent-insensitive).",
+          "default": [],
+          "prefill": []
+        },
+        "cpvCodes": {
+          "title": "CPV prefixes",
+          "type": "array",
+          "editor": "stringList",
+          "description": "Optional. Match any item CPV code that starts with the given prefix (2–8 digits). The list API cannot filter by CPV.",
+          "default": [],
+          "prefill": []
+        },
+        "regions": {
+          "title": "Delivery oblasts",
+          "type": "array",
+          "editor": "stringList",
+          "description": "Optional. Match items[].deliveryAddress.region as published (for example Херсонська область). Buyer address is not used.",
+          "default": [],
+          "prefill": []
+        },
+        "minValueUah": {
+          "title": "Minimum value (UAH)",
+          "type": "number",
+          "editor": "number",
+          "minimum": 0,
+          "description": "Optional. Tenders without UAH value fail this filter."
+        },
+        "maxValueUah": {
+          "title": "Maximum value (UAH)",
+          "type": "number",
+          "editor": "number",
+          "minimum": 0,
+          "description": "Optional. Tenders without UAH value fail this filter."
+        }
+      }
+    }
+  },
+  {
+    "actorId": "enterprising_hamster/polish-company-announcements-msig",
+    "name": "polish-company-announcements-msig",
+    "title": "Poland Court & Business Gazette API – MSiG Announcements",
+    "description": "Daily Monitor Sądowy i Gospodarczy (Polish Court and Business Gazette) notices about companies and other legal entities: bankruptcy, restructuring, liquidation, mergers, transformations, creditor calls, with KRS and court. Natural persons excluded. JSON, CSV, Excel.",
+    "isPublic": true,
+    "buildId": "r9zsaPD1AtiXU36Yw",
+    "buildNumber": "0.1.4",
+    "inputSchema": {
+      "schemaVersion": 1,
+      "title": "Poland MSiG announcements input",
+      "type": "object",
+      "properties": {
+        "lastDays": {
+          "title": "Last N calendar days",
+          "type": "integer",
+          "editor": "number",
+          "minimum": 1,
+          "maximum": 90,
+          "description": "Keep issues whose cover date is on or after today minus N-1 days. Ignored when dateFrom or dateTo is set. Default 1 is today's issue only.",
+          "default": 1,
+          "prefill": 1
+        },
+        "dateFrom": {
+          "title": "Issue date from",
+          "type": "string",
+          "editor": "textfield",
+          "description": "Inclusive ISO date (YYYY-MM-DD). When set, lastDays is ignored."
+        },
+        "dateTo": {
+          "title": "Issue date to",
+          "type": "string",
+          "editor": "textfield",
+          "description": "Inclusive ISO date (YYYY-MM-DD). When set, lastDays is ignored."
+        },
+        "announcementKinds": {
+          "title": "Announcement kinds",
+          "type": "array",
+          "editor": "select",
+          "items": {
+            "type": "string",
+            "enum": [
+              "bankruptcy",
+              "restructuring",
+              "liquidation",
+              "merger",
+              "demerger",
+              "transformation",
+              "dissolution",
+              "creditor_call",
+              "other"
+            ]
+          },
+          "description": "Optional. Keep only these kinds. Empty means every legal-entity notice.",
+          "default": [],
+          "prefill": []
+        },
+        "keywords": {
+          "title": "Keywords",
+          "type": "array",
+          "editor": "stringList",
+          "description": "Matched against the entity name, the legal form, the chapter line, the subsection line, the kind, and KRS. The notice body is not searched.",
+          "default": [],
+          "prefill": []
+        },
+        "krsNumbers": {
+          "title": "KRS numbers",
+          "type": "array",
+          "editor": "stringList",
+          "description": "Optional. Keep notices whose header KRS matches (6-10 digits, padded to 10).",
+          "default": [],
+          "prefill": []
+        },
+        "fullText": {
+          "title": "Include full notice text",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "Off by default. When on, fullText is the notice body and can name liquidators, shareholders, and other people. Turn it on only when you have a legal basis to store that text. Notices about natural persons are never returned.",
+          "default": false,
+          "prefill": false
+        },
+        "maxItems": {
+          "title": "Maximum announcements to save",
+          "type": "integer",
+          "editor": "number",
+          "minimum": 1,
+          "maximum": 10000,
+          "description": "Stop pushing once this many legal-entity rows are saved.",
+          "default": 50,
+          "prefill": 50
+        },
+        "maxRequestsPerSecond": {
+          "title": "Maximum requests per second",
+          "type": "number",
+          "editor": "number",
+          "minimum": 0.2,
+          "maximum": 5,
+          "description": "Minimum spacing between GetFiles and PDF download requests to the Ministry site.",
+          "default": 1,
+          "prefill": 1
+        },
+        "onlyNew": {
+          "title": "Only announcements not seen before",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "Skip ids stored under stateKey in the polish-msig-seen key-value store (50,000 ids per key).",
+          "default": false,
+          "prefill": false
+        },
+        "stateKey": {
+          "title": "State key for only-new runs",
+          "type": "string",
+          "editor": "textfield",
+          "isSecret": true,
+          "description": "Key in the seen store when onlyNew is true. Use a unique name per alert task."
+        }
+      }
+    }
   }
 ]
