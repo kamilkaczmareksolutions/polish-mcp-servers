@@ -24,6 +24,7 @@ const packageVersion = (JSON.parse(readFileSync(new URL("../package.json", impor
 
 const catalog = (JSON.parse(readFileSync(new URL("../catalog/actors.json", import.meta.url), "utf8")) as CatalogRow[])
   .filter((row) => row.isPublic);
+const CEIDG_TOOL = "polish-new-sole-proprietorships-ceidg";
 
 function childEnv(token?: string): Record<string, string> {
   const env: Record<string, string> = {};
@@ -78,6 +79,10 @@ function schemaOf(tool: { inputSchema: unknown }): {
   return tool.inputSchema as { properties?: Record<string, { default?: unknown; maximum?: unknown }> };
 }
 
+test("description keys match the public catalog names", () => {
+  assert.deepEqual(Object.keys(descriptions).sort(), catalog.map((row) => row.name).sort());
+});
+
 test("tools/list works without a token", async () => {
   await withClient("dist/main.js", childEnv(), async (client) => {
     assert.equal(client.getServerVersion()?.name, "polish-mcp");
@@ -87,6 +92,19 @@ test("tools/list works without a token", async () => {
       listed.tools.map((tool) => tool.name),
       catalog.map((row) => row.name),
     );
+    const ceidg = listed.tools.find((tool) => tool.name === CEIDG_TOOL);
+    assert.ok(ceidg);
+    const ceidgSchema = ceidg.inputSchema as {
+      required?: string[];
+      properties?: Record<string, { default?: unknown; items?: { enum?: string[] } }>;
+    };
+    const required = ceidgSchema.required ?? [];
+    assert.equal(required.includes("ceidgApiToken"), false);
+    const tokenField = ceidgSchema.properties?.ceidgApiToken;
+    assert.ok(tokenField);
+    assert.equal(tokenField.default, undefined);
+    assert.deepEqual(ceidgSchema.properties?.events?.items?.enum, ["started", "changed"]);
+    assert.equal(ceidgSchema.properties?.voivodeships?.items?.enum?.includes("mazowieckie"), true);
     for (const tool of listed.tools) {
       const row = catalog.find((entry) => entry.name === tool.name);
       assert.ok(row);
@@ -131,6 +149,7 @@ test("law and registers profiles are partitions of the catalog", async () => {
     const names = (await client.listTools()).tools.map((tool) => tool.name);
     assert.equal(names.includes(LAW_TOOL), false);
     assert.equal(names.includes("cee-public-tenders"), true);
+    assert.equal(names.includes(CEIDG_TOOL), true);
     assert.deepEqual(
       names,
       catalog.map((row) => row.name).filter((name) => name !== LAW_TOOL),

@@ -2836,5 +2836,138 @@
         }
       }
     }
+  },
+  {
+    "actorId": "enterprising_hamster/polish-new-sole-proprietorships-ceidg",
+    "name": "polish-new-sole-proprietorships-ceidg",
+    "title": "CEIDG sole proprietorships in Poland",
+    "description": "New and changed Poland sole proprietorships (JDG) from the official CEIDG API. Filter by date, PKD and voivodeship. Each row has NIP, REGON, status and address. No phone, email or website.",
+    "isPublic": true,
+    "buildId": "hHnUaba3x8R8dfT3U",
+    "buildNumber": "0.1.2",
+    "inputSchema": {
+      "title": "Poland sole proprietorships (CEIDG)",
+      "type": "object",
+      "schemaVersion": 1,
+      "properties": {
+        "dateFrom": {
+          "title": "From date",
+          "type": "string",
+          "editor": "textfield",
+          "description": "First day (YYYY-MM-DD, Europe/Warsaw). For events started this is the activity start date. For events changed this is the entry-change date. Empty with dateTo empty means yesterday. One day when only dateFrom is set.",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "dateTo": {
+          "title": "To date",
+          "type": "string",
+          "editor": "textfield",
+          "description": "Last day, inclusive. Must be used together with dateFrom. At most 31 days. Changed mode is read in windows of 5 days.",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "pkd": {
+          "title": "PKD codes",
+          "type": "array",
+          "editor": "stringList",
+          "description": "PKD codes or prefixes as the CEIDG filter expects them, for example 41 or 4120Z. Dots are removed. Empty means any activity.",
+          "default": []
+        },
+        "voivodeships": {
+          "title": "Voivodeships",
+          "type": "array",
+          "editor": "select",
+          "description": "Place of business must be in one of these voivodeships. Values match the API, for example mazowieckie. Empty means the whole country.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "dolnośląskie",
+              "kujawsko-pomorskie",
+              "lubelskie",
+              "lubuskie",
+              "łódzkie",
+              "małopolskie",
+              "mazowieckie",
+              "opolskie",
+              "podkarpackie",
+              "podlaskie",
+              "pomorskie",
+              "śląskie",
+              "świętokrzyskie",
+              "warmińsko-mazurskie",
+              "wielkopolskie",
+              "zachodniopomorskie"
+            ],
+            "enumTitles": [
+              "dolnośląskie",
+              "kujawsko-pomorskie",
+              "lubelskie",
+              "lubuskie",
+              "łódzkie",
+              "małopolskie",
+              "mazowieckie",
+              "opolskie",
+              "podkarpackie",
+              "podlaskie",
+              "pomorskie",
+              "śląskie",
+              "świętokrzyskie",
+              "warmińsko-mazurskie",
+              "wielkopolskie",
+              "zachodniopomorskie"
+            ]
+          },
+          "default": []
+        },
+        "maxItems": {
+          "title": "Max entries",
+          "type": "integer",
+          "editor": "number",
+          "description": "Stop after this many found entries are saved.",
+          "default": 20,
+          "minimum": 1,
+          "maximum": 20000
+        },
+        "events": {
+          "title": "Events",
+          "type": "array",
+          "editor": "select",
+          "description": "started filters /firmy by the activity start date. changed reads /zmiana by the entry-change date, then each entry. Both run started first, then changed, and the same id is charged once.",
+          "items": {
+            "type": "string",
+            "enum": [
+              "started",
+              "changed"
+            ],
+            "enumTitles": [
+              "Activity started",
+              "Entry changed"
+            ]
+          },
+          "default": [
+            "started"
+          ]
+        },
+        "includePkd": {
+          "title": "Include PKD and status dates",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "After the /firmy list, read each entry for PKD codes and suspension, resumption, end and deletion dates. The list itself has no PKD. The same field allow-list applies.",
+          "default": true
+        },
+        "soleTraderFullAddress": {
+          "title": "Include street and building",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "When false, the address has voivodeship, county, municipality, city, postal code and TERC/SIMC/ULIC only. Street, building and apartment are added only when this is true.",
+          "default": false
+        },
+        "ceidgApiToken": {
+          "title": "CEIDG API token",
+          "type": "string",
+          "editor": "textfield",
+          "description": "JWT for the CEIDG Hurtownia (Authorization Bearer). Stored as a secret. If empty, the Actor reads the CEIDG_API_TOKEN environment variable. If both are empty the run fails before any request.",
+          "isSecret": true
+        }
+      }
+    }
   }
 ]
