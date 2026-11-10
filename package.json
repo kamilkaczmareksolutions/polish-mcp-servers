@@ -1,7 +1,7 @@
 {
   "name": "polish-mcp-servers",
   "version": "0.1.4",
-  "description": "MCP stdio server for Polish public law and registers. Lists 16 Apify Actor tools without a token and runs them with APIFY_TOKEN.",
+  "description": "MCP stdio server for Polish public law and registers. Lists 17 Apify Actor tools without a token and runs them with APIFY_TOKEN.",
   "license": "MIT",
   "author": "Kamil Kaczmarek",
   "homepage": "https://github.com/kamilkaczmareksolutions/polish-mcp-servers#readme",
@@ -25,6 +25,8 @@
     "krs",
     "regon",
     "nip",
+    "ceidg",
+    "jdg",
     "msig",
     "prozorro",
     "ukraine"
