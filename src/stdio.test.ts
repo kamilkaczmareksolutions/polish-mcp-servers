@@ -12,7 +12,15 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 type CatalogRow = {
   name: string;
   isPublic: boolean;
+  buildId: string;
+  buildNumber: string;
   inputSchema: { properties?: Record<string, { default?: unknown; maximum?: unknown }> };
+};
+
+const LIVE_BUILD_PINS: Record<string, { buildNumber: string; buildId: string }> = {
+  "polish-new-companies-krs": { buildNumber: "0.1.7", buildId: "VMNeCFLwueQRRS8TK" },
+  "polish-new-sole-proprietorships-ceidg": { buildNumber: "0.1.7", buildId: "uaub0VhGeWaBc6VX9" },
+  "polish-company-lookup-regon": { buildNumber: "0.1.4", buildId: "HECSh6sLag2JWubPB" },
 };
 
 const descriptions = JSON.parse(
@@ -83,6 +91,15 @@ test("description keys match the public catalog names", () => {
   assert.deepEqual(Object.keys(descriptions).sort(), catalog.map((row) => row.name).sort());
 });
 
+test("three register tools pin the live actor builds", () => {
+  for (const [name, pin] of Object.entries(LIVE_BUILD_PINS)) {
+    const row = catalog.find((entry) => entry.name === name);
+    assert.ok(row, name);
+    assert.equal(row.buildNumber, pin.buildNumber, name);
+    assert.equal(row.buildId, pin.buildId, name);
+  }
+});
+
 test("tools/list works without a token", async () => {
   await withClient("dist/main.js", childEnv(), async (client) => {
     assert.equal(client.getServerVersion()?.name, "polish-mcp");
@@ -96,7 +113,7 @@ test("tools/list works without a token", async () => {
     assert.ok(ceidg);
     const ceidgSchema = ceidg.inputSchema as {
       required?: string[];
-      properties?: Record<string, { default?: unknown; items?: { enum?: string[] } }>;
+      properties?: Record<string, { default?: unknown; description?: string; items?: { enum?: string[] } }>;
     };
     const required = ceidgSchema.required ?? [];
     assert.equal(required.includes("ceidgApiToken"), false);
@@ -105,6 +122,21 @@ test("tools/list works without a token", async () => {
     assert.equal(tokenField.default, undefined);
     assert.deepEqual(ceidgSchema.properties?.events?.items?.enum, ["started", "changed"]);
     assert.equal(ceidgSchema.properties?.voivodeships?.items?.enum?.includes("mazowieckie"), true);
+    assert.equal(ceidgSchema.properties?.includeVatStatus?.default, false);
+    assert.equal(ceidgSchema.properties?.dateTo?.description?.includes("at most 366 days"), true);
+    assert.equal(ceidg.description?.includes("366"), true);
+    assert.equal(ceidg.description?.includes("includeVatStatus"), true);
+    const krs = listed.tools.find((tool) => tool.name === "polish-new-companies-krs");
+    assert.ok(krs);
+    const krsProperties = schemaOf(krs).properties ?? {};
+    assert.deepEqual(krsProperties.counties?.default, []);
+    assert.equal(Object.hasOwn(krsProperties, "gminas"), false);
+    assert.equal(Object.hasOwn(krsProperties, "municipalities"), false);
+    assert.equal(krs.description?.includes("counties"), true);
+    const regon = listed.tools.find((tool) => tool.name === "polish-company-lookup-regon");
+    assert.ok(regon);
+    assert.equal(schemaOf(regon).properties?.onlyChanged?.default, false);
+    assert.equal(regon.description?.includes("onlyChanged"), true);
     for (const tool of listed.tools) {
       const row = catalog.find((entry) => entry.name === tool.name);
       assert.ok(row);

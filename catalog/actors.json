@@ -2382,8 +2382,8 @@
     "title": "Poland New Companies API – KRS Registrations Feed",
     "description": "New and changed Polish companies every day from the official KRS register (nowe spółki KRS): name, NIP, REGON, address, PKD, share capital, registration date. No personal data. For leads, KYC, CRM and AI agents (MCP). CSV, JSON, Excel.",
     "isPublic": true,
-    "buildId": "3yawBGDegPz9hilZA",
-    "buildNumber": "0.1.2",
+    "buildId": "VMNeCFLwueQRRS8TK",
+    "buildNumber": "0.1.7",
     "inputSchema": {
       "title": "Poland new & changed companies (KRS)",
       "type": "object",
@@ -2477,6 +2477,13 @@
           },
           "default": []
         },
+        "counties": {
+          "title": "Counties",
+          "type": "array",
+          "editor": "stringList",
+          "description": "Registered seat powiat must match one of these names, ignoring case. Empty = any county.",
+          "default": []
+        },
         "legalForms": {
           "title": "Legal forms",
           "type": "array",
@@ -2509,8 +2516,8 @@
     "title": "Poland Company Lookup API – REGON, NIP, KRS",
     "description": "Look up a Polish company by NIP, REGON or KRS in the official GUS REGON register: name, address, PKD, dates and optional VAT status. No phone, fax or email. For KYC, CRM and AI agents (MCP).",
     "isPublic": true,
-    "buildId": "AEMWS4UulvF2UZSUU",
-    "buildNumber": "0.1.3",
+    "buildId": "HECSh6sLag2JWubPB",
+    "buildNumber": "0.1.4",
     "inputSchema": {
       "title": "Poland company lookup (REGON)",
       "type": "object",
@@ -2591,6 +2598,13 @@
           "type": "boolean",
           "editor": "checkbox",
           "description": "Ask the Ministry of Finance WL2 status method. Adds vatStatus, vatCheckedAt and vatRequestId. On failure the company is still returned with vatError. No bank accounts and no people.",
+          "default": false
+        },
+        "onlyChanged": {
+          "title": "Only status changes",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "Compare suspension, deletion and VAT status with the previous run. The first successful monitor run stores a baseline and charges nothing. Later runs charge the normal company price only when a watched status changes.",
           "default": false
         },
         "maxItems": {
@@ -2843,8 +2857,8 @@
     "title": "CEIDG sole proprietorships in Poland",
     "description": "New and changed Poland sole proprietorships (JDG) from the official CEIDG API. Filter by date, PKD and voivodeship. Each row has NIP, REGON, status and address. No phone, email or website.",
     "isPublic": true,
-    "buildId": "hHnUaba3x8R8dfT3U",
-    "buildNumber": "0.1.2",
+    "buildId": "uaub0VhGeWaBc6VX9",
+    "buildNumber": "0.1.7",
     "inputSchema": {
       "title": "Poland sole proprietorships (CEIDG)",
       "type": "object",
@@ -2861,7 +2875,7 @@
           "title": "To date",
           "type": "string",
           "editor": "textfield",
-          "description": "Last day, inclusive. Must be used together with dateFrom. At most 31 days. Changed mode is read in windows of 5 days.",
+          "description": "Last day, inclusive, YYYY-MM-DD. When dateFrom is empty, this day alone is the range. When dateFrom is later than dateTo, the two days are swapped and the run continues. The inclusive range may be at most 366 days, for example 2024-01-01 through 2024-12-31. Started mode reads that range in consecutive windows of at most 31 days. Changed mode still reads it in windows of 5 days.",
           "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
         },
         "pkd": {
@@ -2952,6 +2966,13 @@
           "editor": "checkbox",
           "description": "After the /firmy list, read each entry for PKD codes and suspension, resumption, end and deletion dates. The list itself has no PKD. The same field allow-list applies.",
           "default": true
+        },
+        "includeVatStatus": {
+          "title": "Add VAT status",
+          "type": "boolean",
+          "editor": "checkbox",
+          "description": "After a found entry, ask the Ministry of Finance whitelist (WL2) for statusVat on today's date in Europe/Warsaw. The row then also has statusVatCode and dataSprawdzenia. Bank accounts, PESEL, phone, and email are not requested. Default false. One call per found NIP, at least 0.25 seconds apart.",
+          "default": false
         },
         "soleTraderFullAddress": {
           "title": "Include street and building",
